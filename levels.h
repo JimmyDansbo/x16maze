@@ -109,7 +109,7 @@ on the Uzebox forum or mail: jimmy at dansbo.dk
 
 #define MAX_LEVELS 58
 
-const u8 __flash levels[] = {
+const unsigned char levels[] = {
 // Level 1
 25,10,10,		// Size,Width,Height
 00,01,			// Start coordinate (zero based)

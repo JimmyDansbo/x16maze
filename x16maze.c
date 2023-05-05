@@ -109,11 +109,18 @@ static void splashscreen() {
 			Setbgcol(x, y, BLACK);
 		}
 	
-	printstrfg((SCREEN_WIDTH/2)-17, (SCREEN_HEIGHT/2)-8,  "*  * ***  **** *  *  **  **** ****", ORANGE);
-	printstrfg((SCREEN_WIDTH/2)-17, (SCREEN_HEIGHT/2)-7,  "*  *   *  *    **** *  *   ** *", ORANGE);
-	printstrfg((SCREEN_WIDTH/2)-17, (SCREEN_HEIGHT/2)-6,  " **    *  **** *  * ****  **  **", ORANGE);
-	printstrfg((SCREEN_WIDTH/2)-17, (SCREEN_HEIGHT/2)-5,  "*  *   *  *  * *  * *  * **   *", ORANGE);
-	printstrfg((SCREEN_WIDTH/2)-17, (SCREEN_HEIGHT/2)-4,  "*  * **** **** *  * *  * **** ****", ORANGE);
+	printstrfg((SCREEN_WIDTH/2)-17, (SCREEN_HEIGHT/2)-8,  "*  * ***  ****", LIGHTBLUE);
+	printstrfg((SCREEN_WIDTH/2)-17, (SCREEN_HEIGHT/2)-7,  "*  *   *  *",    GREEN);
+	printstrfg((SCREEN_WIDTH/2)-17, (SCREEN_HEIGHT/2)-6,  " **    *  ****", YELLOW);
+	printstrfg((SCREEN_WIDTH/2)-17, (SCREEN_HEIGHT/2)-5,  "*  *   *  *  *", ORANGE);
+	printstrfg((SCREEN_WIDTH/2)-17, (SCREEN_HEIGHT/2)-4,  "*  * **** ****", RED);
+
+	printstrfg((SCREEN_WIDTH/2)-2, (SCREEN_HEIGHT/2)-8,  "*  *  **  **** ****", ORANGE);
+	printstrfg((SCREEN_WIDTH/2)-2, (SCREEN_HEIGHT/2)-7,  "**** *  *   ** *",    ORANGE);
+	printstrfg((SCREEN_WIDTH/2)-2, (SCREEN_HEIGHT/2)-6,  "*  * ****  **  **",   ORANGE);
+	printstrfg((SCREEN_WIDTH/2)-2, (SCREEN_HEIGHT/2)-5,  "*  * *  * **   *",    ORANGE);
+	printstrfg((SCREEN_WIDTH/2)-2, (SCREEN_HEIGHT/2)-4,  "*  * *  * **** ****", ORANGE);
+
 	printstrfg((SCREEN_WIDTH/2)-12, (SCREEN_HEIGHT/2), "press start to begin game", WHITE);
 	printstrfg((SCREEN_WIDTH/2)-11, (SCREEN_HEIGHT/2)+3, "created by jimmy dansbo", GREEN);
 	printstrfg((SCREEN_WIDTH/2)-11, (SCREEN_HEIGHT/2)+5, "(jimmy@dansbo.dk)  2023", GREEN);
@@ -244,11 +251,15 @@ static void show_win() {
 	sprintf(str,"*          %04d moves          *",MoveCnt);
 	printstrcol((SCREEN_WIDTH/2)-16, (SCREEN_HEIGHT/2)+2, str, ORANGE,BLACK);
 
+	curtimer=*(unsigned *)myTimer;	
 	while (btn != SNES_B) {
-		waitVsync();
 		nextbgcolor();
 		SetBorderColor(bgcolor);
-		btn=ReadJoypad(0);
+		while ((*(unsigned *)myTimer != curtimer+10) && (btn != SNES_B)) {
+			waitVsync();
+			btn=ReadJoypad(0);
+		};
+		curtimer=*(unsigned *)myTimer;	
 	}
 }
 

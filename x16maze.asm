@@ -1,4 +1,4 @@
-.import popa
+.import popa			; For retrieveing parameters from C
 
 .export _screen_set
 .export _ReadJoypad
@@ -13,45 +13,57 @@
 .export _Setcol
 
 .segment "CODE"
-old_handler:	.word $0000
-myTimer = $02
+; Global variables 
+old_handler:	.word $0000	; Address to original interrupt handler
+myTimer = $02			; 16 bit ZP address to hold jiffie counter
 
+; *****************************************************************************
+; Increment 16 bit jiffie counter
+; *****************************************************************************
 myIntHandler:
 	inc	myTimer
-	bne	skip
+	bne	:+
 	inc	myTimer+1
-skip:
-	jmp	(old_handler)
+:	jmp	(old_handler)
 
+; *****************************************************************************
+; Install interrupt handler to update jiffie counter
+; *****************************************************************************
 _start_timer:
-	lda	$0314
+	lda	$0314		; Save address of the original interrupt handler
 	sta	old_handler
 	lda	$0315
 	sta	old_handler+1
 
 	sei
-	lda	#<myIntHandler
+	lda	#<myIntHandler	; Install new interrupt handler
 	sta	$0314
 	lda	#>myIntHandler
 	sta	$0315
 	cli
-	lda	#0
 	rts
 
+; *****************************************************************************
+; Set color at specified coordinates
+; *****************************************************************************
 _Setcol:
-	pha
-	jsr	popa
+	pha			; Save Color value on stack
+	jsr	popa		; Get Y coordinate
 	clc
-	adc	#$B0
-	sta	$9F21
-	jsr	popa
-	asl
-	inc
-	sta	$9F20
-	pla
-	sta	$9F23
+	adc	#$B0		; Add VERA textmode offset
+	sta	$9F21		; Set Y coordinate in VERA
+	jsr	popa		; Get X coordinate
+	asl			; Double it for correct memory address
+	inc			; Increment for Color value (not character)
+	sta	$9F20		; Set X coordinate in VERA
+	pla			; Restore color value from stack
+	sta	$9F23		; Write it to VERA
 	rts
 
+; *****************************************************************************
+; Set foreground color at specified coordinates without changing background
+; color
+; *****************************************************************************
 _Setfgcol:
 	pha			; Save foreground color on stack
 	jsr	popa
@@ -66,6 +78,10 @@ _Setfgcol:
 	sta	$9F23		; Set color
 	rts
 
+; *****************************************************************************
+; Set bacground color at specified coordinates without changing foreground
+; color
+; *****************************************************************************
 _Setbgcol:
 	asl			; Move color value to high nibble
 	asl
@@ -84,30 +100,43 @@ _Setbgcol:
 	sta	$9F23		; Set color
 	rts
 
+; *****************************************************************************
+; Get color at specified coordinates
+; *****************************************************************************
 _Getcol:
 	clc
-	adc	#$B0
-	sta	$9F21
-	jsr	popa
-	asl
+	adc	#$B0		; Add VERA textmode offset to Y coordinate
+	sta	$9F21		; Write Y coordinate to VERA
+	jsr	popa		; Get X coordinate
+	asl			; Double and increment to get to color memory
 	inc
-	sta	$9F20
-	lda	$9F23
+	sta	$9F20		; Write X coordinate to VERA
+	lda	$9F23		; Read color value from VERA
 	rts
 
+; *****************************************************************************
+; Get foreground color at specified coordinates
+; *****************************************************************************
 _Getfgcol:
 	jsr	_Getcol
-	and	#$0F
+	and	#$0F		; Remove background color information
 	rts
 
+; *****************************************************************************
+; Get background color at specified coordinates
+; *****************************************************************************
 _Getbgcol:
 	jsr	_Getcol
-	lsr
+	lsr			; Move background color down to low nibble
 	lsr
 	lsr
 	lsr
 	rts
 
+; *****************************************************************************
+; Write a character at specified coordinates
+; This function converts PETSCII to VERA text
+; *****************************************************************************
 _PrintChar:
 	pha			; Save character to print on stack
 	jsr	popa		; Get Y coordinate
@@ -119,12 +148,12 @@ _PrintChar:
 	sta	$9F20		; Set X coordinate
 	pla			; Restore character 
 	; Convert petscii to screencode
-	cmp	#$20
-	bcc	nonprintable
-	cmp	#$40
-	bcc	end
-	cmp	#$60
-	bcc	:+
+	cmp	#$20		; If char < $20, it is a control character
+	bcc	nonprintable	; and can not be written to VERA
+	cmp	#$40		; If char >= $20 & < $40 it can be written
+	bcc	end		; directly to VERA without conversion
+	cmp	#$60		; If char >= $40 & < $60 it needs to 
+	bcc	:+		; be converted
 nonprintable:
 	lda	#$57+$40
 :	sbc	#$3F
@@ -133,22 +162,30 @@ end:
 	lda	#0
 	rts
 
+; *****************************************************************************
+; Wait for interrupt (vSync)
+; *****************************************************************************
 _waitVsync:
 	wai
 	rts
 
+; *****************************************************************************
+; Read the current value of the joypad, but invert the result so it fits
+; with what is expected by the C portion of the program
+; *****************************************************************************
 _ReadJoypad:
 	jsr	$FF56
 	eor	#$FF
-;	ldx	#0
 	rts
 
+; *****************************************************************************
+; Set screen mode and return status of the call
+; *****************************************************************************
 _screen_set:
 	clc
-	jsr	$FF5F 
-	ldx	#0
-	lda	#0
-	rol
-	eor	#1
+	jsr	$FF5F 		; Set screenmode to value in .A
+	lda	#0		; Empty .A
+	rol			; Move carry bit to .A
+	eor	#1		; Invert value so it works in C code
 	rts
 

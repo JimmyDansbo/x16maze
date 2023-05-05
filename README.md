@@ -1,2 +1,2 @@
 # x16maze
-Maze game written in cc65 C
+Maze game written in cc65 C and assemly

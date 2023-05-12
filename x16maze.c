@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include "zsmplayer.h"
 #include "x16maze.h"
 #include "levels.h"
 
@@ -11,12 +12,11 @@ typedef char s8;
 #define SCREEN_WIDTH 40
 #define SCREEN_HEIGHT 30
 
-// 16 bit value on ZeroPage that is updated by vSync interrupt
-#define myTimer 0x0002
-
 // Global variables
 u8 cursorx, cursory, bgcolor, curlvl;
 u16 lvlindex, remflds, MoveCnt;
+// 16 bit value that is updated by vSync interrupt
+u16 myTimer;
 
 /******************************************************************************
  Print a 0-terminated string starting at specified coordinates 
@@ -234,7 +234,7 @@ static void drawlevel() {
 	sprintf(str, "%03d", curlvl);
 	printstr(SCREEN_WIDTH-5, 1, str);
 	// Reset timer variable and MoveCnt
-	*(unsigned *)myTimer=0;
+	myTimer=0;
 	MoveCnt=0;
 }
 
@@ -283,7 +283,7 @@ static void show_win() {
 	char str[40];
 
 	// Read the current jiffie time
-	curtimer=*(unsigned *)myTimer;
+	curtimer=myTimer;
 
 	// Calculate human readable values
 	hour = curtimer/60/60/60;
@@ -310,17 +310,17 @@ static void show_win() {
 	printstrcol((SCREEN_WIDTH/2)-16, (SCREEN_HEIGHT/2)+2, str, ORANGE,BLACK);
 
 	// Use the timer as a delay when updating the "bordercolor"
-	curtimer=*(unsigned *)myTimer;
+	curtimer=myTimer;
 	// Wait for user to press the B button
 	while (btn != SNES_B) {
 		// Cycle bgcolor's
 		nextbgcolor();
 		SetBorderColor(bgcolor);
-		while ((*(unsigned *)myTimer != curtimer+10) && (btn != SNES_B)) {
+		while ((myTimer != curtimer+10) && (btn != SNES_B)) {
 			waitVsync();
 			btn=ReadJoypad(0);
 		};
-		curtimer=*(unsigned *)myTimer;	
+		curtimer=myTimer;
 	}
 }
 
@@ -385,7 +385,7 @@ int main(){
 	// Set 40x30 mode
 	screen_set(3);
 
-	*(unsigned *)myTimer = 0;
+	myTimer=0;
 	start_timer();
 
 	// Show the splash screen and wait for the user to press START

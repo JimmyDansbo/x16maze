@@ -1,4 +1,5 @@
 .import popa			; For retrieveing parameters from C
+.import _myTimer
 
 .export _screen_set
 .export _ReadJoypad
@@ -15,15 +16,14 @@
 .segment "CODE"
 ; Global variables 
 old_handler:	.word $0000	; Address to original interrupt handler
-myTimer = $02			; 16 bit ZP address to hold jiffie counter
 
 ; *****************************************************************************
 ; Increment 16 bit jiffie counter
 ; *****************************************************************************
 myIntHandler:
-	inc	myTimer
+	inc	_myTimer
 	bne	:+
-	inc	myTimer+1
+	inc	_myTimer+1
 :	jmp	(old_handler)
 
 ; *****************************************************************************
@@ -111,6 +111,7 @@ _Getcol:
 	asl			; Double and increment to get to color memory
 	inc
 	sta	$9F20		; Write X coordinate to VERA
+	ldx	#0		; Zero out X as X=high byte of 16bit return value
 	lda	$9F23		; Read color value from VERA
 	rts
 
@@ -120,6 +121,7 @@ _Getcol:
 _Getfgcol:
 	jsr	_Getcol
 	and	#$0F		; Remove background color information
+	ldx	#0		; Zero out X as X=high byte of 16bit return value
 	rts
 
 ; *****************************************************************************
@@ -131,6 +133,7 @@ _Getbgcol:
 	lsr
 	lsr
 	lsr
+	ldx	#0		; Zero out X as X=high byte of 16bit return value
 	rts
 
 ; *****************************************************************************
@@ -176,6 +179,7 @@ _waitVsync:
 _ReadJoypad:
 	jsr	$FF56
 	eor	#$FF
+	ldx	#0		; Zero out X as X=high byte of 16bit return value
 	rts
 
 ; *****************************************************************************
@@ -187,5 +191,6 @@ _screen_set:
 	lda	#0		; Empty .A
 	rol			; Move carry bit to .A
 	eor	#1		; Invert value so it works in C code
+	ldx	#0		; Zero out X as X=high byte of 16bit return value
 	rts
 

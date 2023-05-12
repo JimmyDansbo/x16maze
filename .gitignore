@@ -1,2 +1,4 @@
 *.o
 *.PRG
+.vscode
+

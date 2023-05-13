@@ -107,8 +107,6 @@ below to see how they are done or you can contact the author of this program
 on the Uzebox forum or mail: jimmy at dansbo.dk
 */
 
-#define MAX_LEVELS 58
-
 const unsigned char levels[] = {
 // Level 1
 25,10,10,		// Size,Width,Height

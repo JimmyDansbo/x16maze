@@ -1,5 +1,6 @@
 .import popa			; For retrieveing parameters from C
 .import _myTimer
+.import playmusic_IRQ
 
 .export _screen_set
 .export _ReadJoypad
@@ -12,19 +13,67 @@
 .export _Setfgcol
 .export _Setbgcol
 .export _Setcol
+.export _load_zsm
+.export _breakpoint
 
 .segment "CODE"
 ; Global variables 
 old_handler:	.word $0000	; Address to original interrupt handler
 
+_breakpoint:
+	.byte $db
+	rts
+
 ; *****************************************************************************
-; Increment 16 bit jiffie counter
+; Increment 16 bit jiffie counter and ensure music is playing
 ; *****************************************************************************
 myIntHandler:
+	jsr	playmusic_IRQ
 	inc	_myTimer
 	bne	:+
 	inc	_myTimer+1
 :	jmp	(old_handler)
+
+; *****************************************************************************
+; Load a ZSM file into banked memory
+; *****************************************************************************
+_load_zsm:
+	sta	$0000		; Set correct bank
+
+	lda	#1		; File number, must be unique
+	ldx	#8		; Device 8, local filesystem or SD card
+	ldy	#2		; Secondary command 2 = headerless load
+	jsr	$FFBA		; SETLFS
+
+	jsr	popa		; Get and save low part of address to filename
+	sta	base
+	jsr	popa		; Get and save high part of address to filenem
+	sta	base+1
+	ldx	#$FF		; Find length of filename by searching for 0
+:	inx
+	lda	$FFFF,x		; $FFFF will be replaced by address of string
+base:=*-2
+	bne	:-
+	txa			; Length of filename in A
+	ldx	base		; Address of filename
+	ldy	base+1
+	jsr	$FFBD		; SETNAM
+
+	lda	#0		; 0=load, 1=verify, 2=VRAM,0xxxx, 3=VRAM,1xxxx
+	ldx	#<$A000		; Address to load to
+	ldy	#>$A000
+	jsr	$FFD5		; LOAD
+
+	; 8bit return value must be returned as 16 bit so X and A zeroed
+	ldx	#0
+	lda	#0
+	; Move carry bit into A
+	rol
+	; Invert bit to make it compatible with C true/false
+	eor	#1
+	rts
+
+
 
 ; *****************************************************************************
 ; Install interrupt handler to update jiffie counter

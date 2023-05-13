@@ -13,7 +13,7 @@ typedef char s8;
 #define SCREEN_HEIGHT 30
 
 // Global variables
-u8 cursorx, cursory, bgcolor, curlvl;
+u8 cursorx, cursory, bgcolor, curlvl, numlevels;
 u16 lvlindex, remflds, MoveCnt;
 // 16 bit value that is updated by vSync interrupt
 u16 myTimer;
@@ -156,7 +156,7 @@ static void splashscreen() {
 /******************************************************************************
  Find index of start of level specified in curlvl variable
 ******************************************************************************/
-static void seeklevel() {
+static u8 seeklevel() {
 	u8 lvl=1;
 
 	lvlindex = 0;
@@ -167,7 +167,7 @@ static void seeklevel() {
 		if (levels[lvlindex]==0) {
 			curlvl=1;	// Set current level to 1 and
 			lvlindex=0;	// lvlindex to 0
-			return;
+			return (lvl-2);
 		}
 		lvlindex += levels[lvlindex];	// Set next lvlindex
 	}
@@ -175,8 +175,9 @@ static void seeklevel() {
 	if (levels[lvlindex]==0) {
 		curlvl=1;
 		lvlindex=0;
-		return;
+		return (lvl-2);
 	}
+	return (curlvl);
 }
 
 /******************************************************************************
@@ -356,12 +357,12 @@ static void select_level() {
 
 		// If DOWN has been pressed, decrement level
 		if (btnPressed & SNES_DN) {
-			if (--curlvl == 0) curlvl=MAX_LEVELS;
+			if (--curlvl == 0) curlvl=numlevels;
 			sprintf(str, "%03d", curlvl);
 			printstr(19, 13, str);
 		// If UP has been pressed, increment level
 		} else if (btnPressed & SNES_UP) {
-			if (++curlvl > MAX_LEVELS) curlvl=1;
+			if (++curlvl > numlevels) curlvl=1;
 			sprintf(str, "%03d", curlvl);
 			printstr(19, 13, str);
 		}
@@ -376,7 +377,7 @@ int main(){
 	u8 btnPressed;
 	u8 btnHeld=0;
 	u8 btnPrev=0;
-	curlvl=1;
+	curlvl=255;
 	bgcolor=WHITE;
 
 	// Switch to standard PETSCII character set
@@ -385,11 +386,21 @@ int main(){
 	// Set 40x30 mode
 	screen_set(3);
 
+	load_zsm("histmusic.zsm", 2);
+	load_zsm("gamemusic.zsm", 3);
+
+	zsm_init();
+	zsm_startmusic(2, 0xA000);
+
 	myTimer=0;
 	start_timer();
 
+	numlevels=seeklevel();
+
 	// Show the splash screen and wait for the user to press START
 	splashscreen();
+
+	zsm_startmusic(3, 0xA000);
 
 	while (1) {
 		// Find curlvl

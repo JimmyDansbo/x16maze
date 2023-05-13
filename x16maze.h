@@ -33,6 +33,9 @@
 #define SNES_L		0x20
 #define SNES_R		0x10
 
+#define	RAM_BANK	0x0000
+#define ROM_BANK	0x0001
+
 extern void __fastcall__ screen_set(char mode);
 extern char __fastcall__ ReadJoypad(char num);
 extern void __fastcall__ waitVsync();
@@ -44,5 +47,7 @@ extern char __fastcall__ Getbgcol(char x, char y);
 extern void __fastcall__ Setcol(char x, char y, char col);
 extern void __fastcall__ Setfgcol(char x, char y, char col);
 extern void __fastcall__ Setbgcol(char x, char y, char col);
+extern void __fastcall__ breakpoint();
+extern char __fastcall__ load_zsm(char *str, char bank);
 
 #endif

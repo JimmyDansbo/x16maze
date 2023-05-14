@@ -49,5 +49,6 @@ extern void __fastcall__ Setfgcol(char x, char y, char col);
 extern void __fastcall__ Setbgcol(char x, char y, char col);
 extern void __fastcall__ breakpoint();
 extern char __fastcall__ load_zsm(char *str, char bank);
+extern void __fastcall__ petprintch(char ch);
 
 #endif

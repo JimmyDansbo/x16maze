@@ -15,11 +15,21 @@
 .export _Setcol
 .export _load_zsm
 .export _breakpoint
+.export _petprintch
 
 .segment "CODE"
 ; Global variables 
 old_handler:	.word $0000	; Address to original interrupt handler
 
+; *****************************************************************************
+; Use kernal to print character
+; *****************************************************************************
+_petprintch:
+	jmp	$FFD2
+
+; *****************************************************************************
+; Introduce a breakpoint into the emulators debugger
+; *****************************************************************************
 _breakpoint:
 	.byte $db
 	rts

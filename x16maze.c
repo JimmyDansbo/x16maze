@@ -143,7 +143,9 @@ static void splashscreen() {
 	printstrfg((SCREEN_WIDTH/2)-12, (SCREEN_HEIGHT/2), "press start to begin game", WHITE);
 	printstrfg((SCREEN_WIDTH/2)-11, (SCREEN_HEIGHT/2)+3, "created by jimmy dansbo", GREEN);
 	printstrfg((SCREEN_WIDTH/2)-11, (SCREEN_HEIGHT/2)+5, "(jimmy@dansbo.dk)  2023", GREEN);
-	printstrfg((SCREEN_WIDTH/2)-15, (SCREEN_HEIGHT/2)+7, "https://github.com/jimmydansbo/", LIGHTGREEN);
+	printstrfg((SCREEN_WIDTH/2)-15, (SCREEN_HEIGHT/2)+6, "https://github.com/jimmydansbo/", LIGHTGREEN);
+
+	printstrfg((SCREEN_WIDTH/2)-7, (SCREEN_HEIGHT/2)+8, "music by crisps", RED);
 
 	// Wait for user to press start. Use the time to "randomize" background color
 	while (btn != SNES_STA) {
@@ -370,6 +372,13 @@ static void select_level() {
 	}
 }
 
+void petprint(char *str) {
+	unsigned char cnt=0;
+
+	while (str[cnt]!=0)
+		petprintch(str[cnt++]);
+}
+
 /******************************************************************************
  Main function that initializes game and runs the main loop
 ******************************************************************************/
@@ -380,14 +389,15 @@ int main(){
 	curlvl=255;
 	bgcolor=WHITE;
 
+
 	// Switch to standard PETSCII character set
 	__asm__ ("lda #$8E");
 	__asm__ ("jsr $FFD2");
+	petprint("loading title theme...");
+	load_zsm("title.zsm", 2);
+
 	// Set 40x30 mode
 	screen_set(3);
-
-	load_zsm("histmusic.zsm", 2);
-	load_zsm("gamemusic.zsm", 3);
 
 	zsm_init();
 	zsm_startmusic(2, 0xA000);
@@ -400,7 +410,17 @@ int main(){
 	// Show the splash screen and wait for the user to press START
 	splashscreen();
 
-	zsm_startmusic(3, 0xA000);
+	zsm_stopmusic();		// stopmusic seems to change VERA INC value
+	*(char *)0x9F22 = 0x11;		// Ensure VBANK1 and Addr INC=1
+
+	printstrcol(9, 13, "**********************", YELLOW, BLACK);
+	printstrcol(9, 14, "*                    *", YELLOW, BLACK);
+	printstrcol(9, 15, "* loading assetss... *", YELLOW, BLACK);
+	printstrcol(9, 16, "*                    *", YELLOW, BLACK);
+	printstrcol(9, 17, "**********************", YELLOW, BLACK);
+
+	load_zsm("maze.zsm", 2);
+	zsm_startmusic(2, 0xA000);
 
 	while (1) {
 		// Find curlvl

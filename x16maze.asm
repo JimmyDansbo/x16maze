@@ -16,6 +16,7 @@
 .export _load_zsm
 .export _breakpoint
 .export _petprintch
+.export _vload
 
 .segment "CODE"
 ; Global variables 
@@ -45,10 +46,55 @@ myIntHandler:
 :	jmp	(old_handler)
 
 ; *****************************************************************************
+; *****************************************************************************
+_vload:
+	inc
+	inc
+	pha
+
+	jsr	popa
+	pha
+	jsr	popa
+	pha
+
+	lda	#1		; File number, must be unique
+	ldx	#8		; Device 8, local filesystem or SD card
+	ldy	#2		; Secondary command 2 = headerless load
+	jsr	$FFBA		; SETLFS
+
+	jsr	popa		; Get and save low part of address to filename
+	sta	vbase
+	jsr	popa		; Get and save high part of address to filenem
+	sta	vbase+1
+	ldx	#$FF		; Find length of filename by searching for 0
+:	inx
+	lda	$FFFF,x		; $FFFF will be replaced by address of string
+vbase:=*-2
+	bne	:-
+	txa			; Length of filename in A
+	ldx	vbase		; Address of filename
+	ldy	vbase+1
+	jsr	$FFBD		; SETNAM
+
+	plx
+	ply
+	pla			; 0=load, 1=verify, 2=VRAM,0xxxx, 3=VRAM,1xxxx
+	jsr	$FFD5		; LOAD
+
+	; 8bit return value must be returned as 16 bit so X and A zeroed
+	ldx	#0
+	lda	#0
+	; Move carry bit into A
+	rol
+	; Invert bit to make it compatible with C true/false
+	eor	#1
+	rts
+
+; *****************************************************************************
 ; Load a ZSM file into banked memory
 ; *****************************************************************************
 _load_zsm:
-	sta	$0000		; Set correct bank
+	sta	$00		; Set correct bank
 
 	lda	#1		; File number, must be unique
 	ldx	#8		; Device 8, local filesystem or SD card

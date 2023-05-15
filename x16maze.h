@@ -50,5 +50,6 @@ extern void __fastcall__ Setbgcol(char x, char y, char col);
 extern void __fastcall__ breakpoint();
 extern char __fastcall__ load_zsm(char *str, char bank);
 extern void __fastcall__ petprintch(char ch);
+extern char __fastcall__ vload(char * str, unsigned int addr, char bank);
 
 #endif

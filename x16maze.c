@@ -18,6 +18,44 @@ u16 lvlindex, remflds, MoveCnt;
 // 16 bit value that is updated by vSync interrupt
 u16 myTimer;
 
+static void loadnshowcrisps() {
+	u16 pal[15]={	0x0000,0x0112,0x0311,0x0410,
+			0x0510,0x0225,0x0226,0x0710,
+			0x022A,0x0239,0x023E,0x0543,
+			0x027C,0x028E,0x0CC9
+		    };
+	u8 cnt;
+
+	// Set address of pallette
+	*(char*)0x9F20 = 32;
+	*(char*)0x9F21 = 0xFA;
+	*(char*)0x9F22 = 0x11;
+	for (cnt=0; cnt<15; ++cnt) {
+		*(char*)0x9F23 = (char)(pal[cnt]&0xFF);
+		*(char*)0x9F23 = (char)(pal[cnt]>>8);
+	}
+
+	vload("crisps.bin", 0x0000, 0);
+
+	// Set address of first sprite
+	*(char*)0x9F20 = 0;
+	*(char*)0x9F21 = 0xFC;
+	*(char*)0x9F22 = 0x11;
+
+	*(char*)0x9F23 = 0;	// Low Address bits
+	*(char*)0x9F23 = 0;	// High Address bits
+	*(char*)0x9F23 = 152;	// Low X coordinate
+	*(char*)0x9F23 = 0;	// High X coordinate
+	*(char*)0x9F23 = 195;	// Low Y coordinate
+	*(char*)0x9F23 = 0;	// High Y coordinate
+
+	*(char*)0x9F23 = 0x0C;	// Z-depth in front
+	*(char*)0x9F23 = 0x51;	// Pallette offset = 1
+
+	*(char*)0x9F29 = (*(char*)0x9F29|0x40); // Enable sprites
+
+}
+
 /******************************************************************************
  Print a 0-terminated string starting at specified coordinates 
 ******************************************************************************/
@@ -396,6 +434,7 @@ int main(){
 	petprint("loading title theme...");
 	load_zsm("title.zsm", 2);
 
+
 	// Set 40x30 mode
 	screen_set(3);
 
@@ -406,6 +445,8 @@ int main(){
 	start_timer();
 
 	numlevels=seeklevel();
+
+	loadnshowcrisps();
 
 	// Show the splash screen and wait for the user to press START
 	splashscreen();

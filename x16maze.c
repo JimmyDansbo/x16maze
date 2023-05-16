@@ -38,21 +38,19 @@ static void loadnshowcrisps() {
 	vload("crisps.bin", 0x0000, 0);
 
 	// Set address of first sprite
-	*(char*)0x9F20 = 0;
-	*(char*)0x9F21 = 0xFC;
-	*(char*)0x9F22 = 0x11;
+	*(u16*)VERA_ADDR	= 0xFC00;
+	*(u8*)VERA_ADDR_HI	= 0x11;
 
-	*(char*)0x9F23 = 0;	// Low Address bits
-	*(char*)0x9F23 = 0;	// High Address bits
-	*(char*)0x9F23 = 152;	// Low X coordinate
-	*(char*)0x9F23 = 0;	// High X coordinate
-	*(char*)0x9F23 = 195;	// Low Y coordinate
-	*(char*)0x9F23 = 0;	// High Y coordinate
+	*(u8*)VERA_DATA0	= 0;	// Low Address bits
+	*(u8*)VERA_DATA0	= 0;	// High Address bits
+	*(u8*)VERA_DATA0	= 152;	// Low X coordinate
+	*(u8*)VERA_DATA0	= 0;	// High X coordinate
+	*(u8*)VERA_DATA0	= 195;	// Low Y coordinate
+	*(u8*)VERA_DATA0	= 0;	// High Y coordinate
+	*(u8*)VERA_DATA0	= 0x0C;	// Z-depth in front
+	*(u8*)VERA_DATA0	= 0x51;	// Pallette offset = 1
 
-	*(char*)0x9F23 = 0x0C;	// Z-depth in front
-	*(char*)0x9F23 = 0x51;	// Pallette offset = 1
-
-	*(char*)0x9F29 = (*(char*)0x9F29|0x40); // Enable sprites
+	*(u8*)VERA_CONFIG	= (*(char*)VERA_CONFIG|0x40); // Enable sprites
 }
 
 /******************************************************************************
@@ -462,7 +460,7 @@ int main(){
 	load_zsm("maze.zsm", 2);
 	zsm_startmusic(2, 0xA000);
 
-	*(char*)0x9F29 = (*(char*)0x9F29&0xBF); // Disable sprites
+	*(char*)VERA_CONFIG = (*(char*)VERA_CONFIG&0xBF); // Disable sprites
 
 	while (1) {
 		// Find curlvl

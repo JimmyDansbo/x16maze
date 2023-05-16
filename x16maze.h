@@ -36,6 +36,12 @@
 #define	RAM_BANK	0x0000
 #define ROM_BANK	0x0001
 
+#define VERA_CONFIG	0x9F29
+#define VERA_ADDR	0x9F20
+#define VERA_ADDR_HI	0x9F22
+#define VERA_DATA0	0x9F23
+#define VERA_DATA1	0x9F24
+
 extern void __fastcall__ screen_set(char mode);
 extern char __fastcall__ ReadJoypad(char num);
 extern void __fastcall__ waitVsync();

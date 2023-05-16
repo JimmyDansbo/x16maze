@@ -53,7 +53,6 @@ static void loadnshowcrisps() {
 	*(char*)0x9F23 = 0x51;	// Pallette offset = 1
 
 	*(char*)0x9F29 = (*(char*)0x9F29|0x40); // Enable sprites
-
 }
 
 /******************************************************************************
@@ -462,6 +461,8 @@ int main(){
 
 	load_zsm("maze.zsm", 2);
 	zsm_startmusic(2, 0xA000);
+
+	*(char*)0x9F29 = (*(char*)0x9F29&0xBF); // Disable sprites
 
 	while (1) {
 		// Find curlvl

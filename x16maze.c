@@ -19,24 +19,18 @@ u16 lvlindex, remflds, MoveCnt;
 u16 myTimer;
 
 static void loadnshowcrisps() {
-	u16 pal[15]={	0x0000,0x0112,0x0311,0x0410,
-			0x0510,0x0225,0x0226,0x0710,
-			0x022A,0x0239,0x023E,0x0543,
-			0x027C,0x028E,0x0CC9
-		    };
+	u16 pal[8]={0x0000,0x0410,0x0721,0x0831,0x026C,0x008F,0x0CC8,0x0FFA};
 	u8 cnt;
 
 	// Set address of pallette
-	*(char*)0x9F20 = 32;
-	*(char*)0x9F21 = 0xFA;
-	*(char*)0x9F22 = 0x11;
-	for (cnt=0; cnt<15; ++cnt) {
-		*(char*)0x9F23 = (char)(pal[cnt]&0xFF);
-		*(char*)0x9F23 = (char)(pal[cnt]>>8);
+	*(u16*)VERA_ADDR	= 0xFA20;
+	*(u8*)VERA_ADDR_HI	= 0x11;
+	for (cnt=0; cnt<8; ++cnt) {
+		*(u8*)VERA_DATA0 = (char)(pal[cnt]&0xFF);
+		*(u8*)VERA_DATA0 = (char)(pal[cnt]>>8);
 	}
 
 	vload("crisps.bin", 0x0000, 0);
-
 	// Set address of first sprite
 	*(u16*)VERA_ADDR	= 0xFC00;
 	*(u8*)VERA_ADDR_HI	= 0x11;
@@ -154,8 +148,9 @@ static void nextbgcolor() {
  Show the splash screen
 ******************************************************************************/
 static void splashscreen() {
-	u8 x, y;
+	s8 x, y;
 	u8 btn=0;
+	u16 tmpTimer;
 
 	for (y=0; y<SCREEN_HEIGHT; ++y)
 		for (x=0; x<SCREEN_WIDTH; ++x) {
@@ -182,10 +177,36 @@ static void splashscreen() {
 
 	printstrfg((SCREEN_WIDTH/2)-7, (SCREEN_HEIGHT/2)+8, "music by crisps", RED);
 
+	tmpTimer=myTimer;
+	*(u8*)VERA_ADDR_HI=0x01;
+	*(u16*)VERA_ADDR=0xFC02;
+	x=1;
+	btn=*(u8*)VERA_DATA0;
 	// Wait for user to press start. Use the time to "randomize" background color
 	while (btn != SNES_STA) {
 		waitVsync();
 		nextbgcolor();
+		if ((myTimer-tmpTimer)==2) {
+			tmpTimer=myTimer;
+			btn=*(u8*)VERA_DATA0;
+			if (x==1) {
+				if (btn==208) {
+					x=-1;
+					*(u16*)VERA_ADDR=0xFC06;
+					*(u8*)VERA_DATA0+=1;
+					*(u16*)VERA_ADDR=0xFC02;
+				}
+			} else {
+				if (btn==105) {
+					x=1;
+					*(u16*)VERA_ADDR=0xFC06;
+					*(u8*)VERA_DATA0-=1;
+					*(u16*)VERA_ADDR=0xFC02;
+				}
+			}
+			btn+=x;
+			*(u8*)VERA_DATA0=btn;
+		}
 		btn=ReadJoypad(0);
 	}
 }
@@ -428,9 +449,9 @@ int main(){
 	// Switch to standard PETSCII character set
 	__asm__ ("lda #$8E");
 	__asm__ ("jsr $FFD2");
+
 	petprint("loading title theme...");
 	load_zsm("title.zsm", 2);
-
 
 	// Set 40x30 mode
 	screen_set(3);
@@ -449,7 +470,7 @@ int main(){
 	splashscreen();
 
 	zsm_stopmusic();		// stopmusic seems to change VERA INC value
-	*(char *)0x9F22 = 0x11;		// Ensure VBANK1 and Addr INC=1
+	*(u8*)VERA_ADDR_HI = 0x11;	// Ensure VBANK1 and Addr INC=1
 
 	printstrcol(9, 13, "**********************", YELLOW, BLACK);
 	printstrcol(9, 14, "*                    *", YELLOW, BLACK);
@@ -460,7 +481,7 @@ int main(){
 	load_zsm("maze.zsm", 2);
 	zsm_startmusic(2, 0xA000);
 
-	*(char*)VERA_CONFIG = (*(char*)VERA_CONFIG&0xBF); // Disable sprites
+	*(u8*)VERA_CONFIG = (*(u8*)VERA_CONFIG&0xBF); // Disable sprites
 
 	while (1) {
 		// Find curlvl

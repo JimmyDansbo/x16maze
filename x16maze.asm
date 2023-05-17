@@ -46,13 +46,14 @@ myIntHandler:
 :	jmp	(old_handler)
 
 ; *****************************************************************************
+; Load a binary file into VRAM at specified bank and address
 ; *****************************************************************************
 _vload:
-	inc
-	inc
-	pha
+	inc			; Increment VERA bank number 2 times to make it
+	inc			; fit with the LOAD call (2=0xxxx, 3=1xxxx)
+	pha			; Save VERA bank on stack
 
-	jsr	popa
+	jsr	popa		; Get address and store it on stack
 	pha
 	jsr	popa
 	pha
@@ -76,7 +77,7 @@ vbase:=*-2
 	ldy	vbase+1
 	jsr	$FFBD		; SETNAM
 
-	plx
+	plx			; Pull address to load to from stack
 	ply
 	pla			; 0=load, 1=verify, 2=VRAM,0xxxx, 3=VRAM,1xxxx
 	jsr	$FFD5		; LOAD

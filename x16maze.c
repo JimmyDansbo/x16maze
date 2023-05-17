@@ -30,7 +30,7 @@ static void loadnshowcrisps() {
 		*(u8*)VERA_DATA0 = (char)(pal[cnt]>>8);
 	}
 
-	vload("crisps.bin", 0x0000, 0);
+	vload("crisps32.bin", 0x0000, 0);
 	// Set address of first sprite
 	*(u16*)VERA_ADDR	= 0xFC00;
 	*(u8*)VERA_ADDR_HI	= 0x11;
@@ -42,7 +42,7 @@ static void loadnshowcrisps() {
 	*(u8*)VERA_DATA0	= 195;	// Low Y coordinate
 	*(u8*)VERA_DATA0	= 0;	// High Y coordinate
 	*(u8*)VERA_DATA0	= 0x0C;	// Z-depth in front
-	*(u8*)VERA_DATA0	= 0x51;	// Pallette offset = 1
+	*(u8*)VERA_DATA0	= 0xA1;	// Pallette offset = 1
 
 	*(u8*)VERA_CONFIG	= (*(char*)VERA_CONFIG|0x40); // Enable sprites
 }
@@ -190,18 +190,12 @@ static void splashscreen() {
 			tmpTimer=myTimer;
 			btn=*(u8*)VERA_DATA0;
 			if (x==1) {
-				if (btn==208) {
+				if (btn==195) {
 					x=-1;
-					*(u16*)VERA_ADDR=0xFC06;
-					*(u8*)VERA_DATA0+=1;
-					*(u16*)VERA_ADDR=0xFC02;
 				}
 			} else {
-				if (btn==105) {
+				if (btn==102) {
 					x=1;
-					*(u16*)VERA_ADDR=0xFC06;
-					*(u8*)VERA_DATA0-=1;
-					*(u16*)VERA_ADDR=0xFC02;
 				}
 			}
 			btn+=x;

@@ -43,6 +43,10 @@ myIntHandler:
 	inc	_myTimer
 	bne	:+
 	inc	_myTimer+1
+	bne	:+
+	inc	_myTimer+2
+	bne	:+
+	inc	_myTimer+3
 :	jmp	(old_handler)
 
 ; *****************************************************************************

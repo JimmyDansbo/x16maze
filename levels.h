@@ -1089,3 +1089,5 @@ const unsigned char levels[] = {
 // No more level
 0				// When size 0, there are no more mazes.
 };
+
+#define NUMLEVELS 58

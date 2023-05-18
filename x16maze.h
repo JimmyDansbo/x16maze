@@ -58,4 +58,32 @@ extern char __fastcall__ load_zsm(char *str, char bank);
 extern void __fastcall__ petprintch(char ch);
 extern char __fastcall__ vload(char * str, unsigned int addr, char bank);
 
+#define SPRITE_MODE_4BPP	0
+#define SPRITE_MODE_8BPP	1
+
+#define SPRITE_WIDTH_8		0
+#define SPRITE_WIDTH_16		1
+#define SPRITE_WIDTH_32		2
+#define SPRITE_WIDTH_64		3
+
+#define SPRITE_HEIGHT_8		0
+#define SPRITE_HEIGHT_16	1
+#define SPRITE_HEIGHT_32	2
+#define SPRITE_HEIGHT_64	3
+
+struct _spriteattributes {
+	unsigned int address;
+	unsigned char address_hi;
+	unsigned char mode;
+	unsigned int x;
+	unsigned int y;
+	unsigned char vflip;
+	unsigned char hflip;
+	unsigned char zdepth;
+	unsigned char collisionmask;
+	unsigned char palletteoffset;
+	unsigned char width;
+	unsigned char height;
+};
+
 #endif

@@ -561,6 +561,7 @@ int main(){
 	u8 btnPressed;
 	u8 btnHeld=0;
 	u8 btnPrev=0;
+	u8 playmusic=1;
 	curlvl=1;
 	bgcolor=WHITE;
 
@@ -626,6 +627,15 @@ int main(){
 			else if (btnPressed & SNES_Y) {
 				select_level();
 				btnPressed=SNES_SEL;
+			} else if (btnPressed & SNES_STA) {
+				if (playmusic==1) {
+					playmusic=0;
+					zsm_stopmusic();
+					*(u8*)VERA_ADDR_HI = 0x11;	// Ensure VBANK1 and Addr INC=1
+				} else {
+					playmusic=1;
+					zsm_startmusic(2, 0xA000);
+				}
 			}
 			btnPrev = btnHeld;
 			// If there are no more fields, the maze is solved

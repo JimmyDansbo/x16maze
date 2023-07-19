@@ -287,10 +287,20 @@ _waitVsync:
 ; with what is expected by the C portion of the program
 ; *****************************************************************************
 _ReadJoypad:
-	jsr	$FF56
-	eor	#$FF
+	stz	tmp
+	cmp	#0		; If joypad0, read both 0 and 1
+	bne	onlyone
+	jsr	$FF56		; Read joypad
+	eor	#$FF		; Invert result
+	sta	tmp		; Store in temporary location
+	lda	#1		; Read joypad1 since we have just read joypad0
+onlyone:
+	jsr	$FF56		; Read joypad
+	eor	#$FF		; Invert result
+	ora	tmp		; Combine it with result from first joypad
 	ldx	#0		; Zero out X as X=high byte of 16bit return value
 	rts
+tmp:	.byte	0
 
 ; *****************************************************************************
 ; Set screen mode and return status of the call

@@ -54,9 +54,11 @@ extern void __fastcall__ Setcol(char x, char y, char col);
 extern void __fastcall__ Setfgcol(char x, char y, char col);
 extern void __fastcall__ Setbgcol(char x, char y, char col);
 extern void __fastcall__ breakpoint();
+extern void __fastcall__ dbg8(unsigned char val);
+extern void __fastcall__ dbg16(unsigned int val);
 extern char __fastcall__ load_zsm(char *str, char bank);
 extern void __fastcall__ petprintch(char ch);
-extern char __fastcall__ vload(char * str, unsigned int addr, char bank);
+extern char __fastcall__ vload(char *str, unsigned int addr, char bank);
 
 #define SPRITE_MODE_4BPP	0
 #define SPRITE_MODE_8BPP	1

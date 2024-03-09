@@ -1,6 +1,6 @@
 .import popa			; For retrieveing parameters from C
 .import _myTimer
-.import playmusic_IRQ
+.import zsm_tick
 
 .export _screen_set
 .export _ReadJoypad
@@ -15,8 +15,12 @@
 .export _Setcol
 .export _load_zsm
 .export _breakpoint
+.export _dbg8
+.export _dbg16
 .export _petprintch
 .export _vload
+
+RAM_BANK = $00
 
 .segment "CODE"
 ; Global variables 
@@ -32,14 +36,19 @@ _petprintch:
 ; Introduce a breakpoint into the emulators debugger
 ; *****************************************************************************
 _breakpoint:
+_dbg8:
+_dbg16:
 	.byte $db
 	rts
+
 
 ; *****************************************************************************
 ; Increment 16 bit jiffie counter and ensure music is playing
 ; *****************************************************************************
 myIntHandler:
-	jsr	playmusic_IRQ
+;	jsr	playmusic_IRQ
+	lda	#0
+	jsr	zsm_tick
 	inc	_myTimer
 	bne	:+
 	inc	_myTimer+1
@@ -108,7 +117,7 @@ _load_zsm:
 
 	jsr	popa		; Get and save low part of address to filename
 	sta	base
-	jsr	popa		; Get and save high part of address to filenem
+	jsr	popa		; Get and save high part of address to filename
 	sta	base+1
 	ldx	#$FF		; Find length of filename by searching for 0
 :	inx

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "zsmplayer.h"
+#include "zsmckit.h"
 #include "x16maze.h"
 #include "levels.h"
 
@@ -22,7 +22,14 @@ u16 lvlindex, remflds, MoveCnt;
 u32 lvltimes[NUMLEVELS];
 // 32 bit value that is updated by vSync interrupt
 u32 myTimer;
+char tracknames[5][10] = {"title.zsm",
+			  "maze1.zsm",
+			  "maze2.zsm",
+			  "maze3.zsm",
+			  "maze4.zsm"};
+u8 currtrack=1;
 
+#define MAXTRACKS 4
 
 void leveldone() {
 	u8 bit=0x80;
@@ -381,6 +388,11 @@ static void do_move(s8 x, s8 y) {
 	u8 moved=false;
 	char str[5];
 
+	if (Getbgcol(cursorx+x, cursory+y)!=WALLCOL) {
+		zsm_rewind(2);
+		zsm_rewind(1);
+		zsm_play(1);
+	}
 	// Loop until we hit a wall
 	while (Getbgcol(cursorx+x, cursory+y)!=WALLCOL) {
 		// Remove old cursor 
@@ -402,7 +414,12 @@ static void do_move(s8 x, s8 y) {
 		waitVsync();
 	}
 	// Update MoveCnt if we have actually moved
-	if (moved) MoveCnt++;
+	if (moved) {
+		MoveCnt++;
+		zsm_rewind(1);
+		zsm_rewind(2);
+		zsm_play(2);
+	}
 }
 
 /******************************************************************************
@@ -554,10 +571,20 @@ void petprint(char *str) {
 		petprintch(str[cnt++]);
 }
 
+void switchtrack(){
+	zsm_rewind(0);
+	*(u8*)VERA_ADDR_HI = 0x11;	// Ensure VBANK1 and Addr INC=1
+	if (++currtrack > MAXTRACKS) currtrack=0;
+	load_zsm(tracknames[currtrack], 2);
+	zsm_setmem(0, 0xA000, 2);
+	zsm_play(0);
+}
+
 /******************************************************************************
  Main function that initializes game and runs the main loop
 ******************************************************************************/
 int main(){
+	struct zsm_state mystate;
 	u8 btnPressed;
 	u8 btnHeld=0;
 	u8 btnPrev=0;
@@ -573,13 +600,23 @@ int main(){
 		lvlbmp[btnPressed]=0x00;
 
 	petprint("loading title theme...");
-	load_zsm("title.zsm", 2);
+	load_zsm(tracknames[0], 2);
+	load_zsm("swoosh.zsm", 38);
+	load_zsm("bonk.zsm",39);
 
 	// Set 40x30 mode
+
 	screen_set(3);
 
-	zsm_init();
-	zsm_startmusic(2, 0xA000);
+	zsm_init_engine(1);
+	zsm_setmem(0, 0xA000, 2);
+	zsm_setmem(1, 0xA000, 38);	// Swoosh
+	zsm_setmem(2, 0xA000, 39);	// Bonk
+	zsm_setloop(1, NO_LOOP);
+	zsm_setloop(2, NO_LOOP);
+	zsm_setatten(0, 0x1F);
+	zsm_setatten(2, 0x2F);
+	zsm_play(0);
 
 	myTimer=0;
 	start_timer();
@@ -589,7 +626,7 @@ int main(){
 	// Show the splash screen and wait for the user to press START
 	splashscreen();
 
-	zsm_stopmusic();		// stopmusic seems to change VERA INC value
+	zsm_rewind(0);
 	*(u8*)VERA_ADDR_HI = 0x11;	// Ensure VBANK1 and Addr INC=1
 
 	printstrcol(9, 13, "**********************", YELLOW, BLACK);
@@ -598,8 +635,9 @@ int main(){
 	printstrcol(9, 16, "*                    *", YELLOW, BLACK);
 	printstrcol(9, 17, "**********************", YELLOW, BLACK);
 
-	load_zsm("maze.zsm", 2);
-	zsm_startmusic(2, 0xA000);
+	load_zsm(tracknames[1], 2);
+	zsm_setmem(0, 0xA000, 2);
+	zsm_play(0);
 
 	*(u8*)VERA_CONFIG = (*(u8*)VERA_CONFIG&0xBF); // Disable sprites
 
@@ -612,6 +650,9 @@ int main(){
 		btnPressed=0;
 		while (btnPressed != SNES_SEL) {
 			waitVsync();
+
+			mystate = zsm_getstate(0);
+			if (mystate.loopcnt!=0) dbg16(mystate.loopcnt);
 
 			btnHeld = ReadJoypad(0);
 			btnPressed = btnHeld & (btnHeld ^ btnPrev);
@@ -627,14 +668,16 @@ int main(){
 			else if (btnPressed & SNES_Y) {
 				select_level();
 				btnPressed=SNES_SEL;
+			} else if (btnPressed & SNES_B) {
+				switchtrack();
 			} else if (btnPressed & SNES_STA) {
 				if (playmusic==1) {
 					playmusic=0;
-					zsm_stopmusic();
+					zsm_stop(0);
 					*(u8*)VERA_ADDR_HI = 0x11;	// Ensure VBANK1 and Addr INC=1
 				} else {
 					playmusic=1;
-					zsm_startmusic(2, 0xA000);
+					zsm_play(0);
 				}
 			}
 			btnPrev = btnHeld;

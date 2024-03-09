@@ -7,9 +7,9 @@
 #define NO_LOOP 0
 
 // These values are used to tell zsm_tick what to update
-#define MUSIC_PCM 0
-#define PCM_ONLY 1
-#define MUSIC_ONLY 2
+#define MUSIC_PCM 0	// Music and PCM
+#define PCM_ONLY 1	// Only PCM
+#define MUSIC_ONLY 2	// Only Music
 
 //    void callbackfunction(uint8_t eventtype, uint8_t priority, uint8_t paramval)
 // eventtype = .Y - priority = .X - paramval = .A

@@ -9,6 +9,8 @@
 .export _PrintChar
 .export _Getfgcol
 .export _Getbgcol
+.export _Getcell
+.export _Putcell
 .export _Getcol
 .export _Setfgcol
 .export _Setbgcol
@@ -46,7 +48,6 @@ _dbg16:
 ; Increment 16 bit jiffie counter and ensure music is playing
 ; *****************************************************************************
 myIntHandler:
-;	jsr	playmusic_IRQ
 	lda	#0
 	jsr	zsm_tick
 	inc	_myTimer
@@ -217,6 +218,39 @@ _Setbgcol:
 	ora	$9F23		; Combine it with existing fg color
 	dec	$9F20		; Back to color value in vram
 	sta	$9F23		; Set color
+	rts
+
+; *****************************************************************************
+; Get char and color at specified coordinates
+; *****************************************************************************
+_Getcell:
+	clc
+	adc	#$B0
+	sta	$9F21
+	jsr	popa
+	asl
+	sta	$9F20
+	lda	$9F23
+	ldx	$9F23
+	rts
+
+; *****************************************************************************
+; Put char and color at specified coordinates
+; *****************************************************************************
+_Putcell:
+	pha
+	phx
+	jsr	popa
+	clc
+	adc	#$B0
+	sta	$9F21
+	jsr	popa
+	asl
+	sta	$9F20
+	plx
+	pla
+	sta	$9F23
+	stx	$9F23
 	rts
 
 ; *****************************************************************************

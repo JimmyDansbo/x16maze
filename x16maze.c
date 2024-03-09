@@ -572,19 +572,41 @@ void petprint(char *str) {
 }
 
 void switchtrack(){
+	u8 x, y, cnt;
+	u16 cell[110];
+
 	zsm_rewind(0);
 	*(u8*)VERA_ADDR_HI = 0x11;	// Ensure VBANK1 and Addr INC=1
+	cnt=0;
+	for (y=13; y<=17; ++y) {
+		for (x=9; x<=30; ++x) {
+			cell[cnt++]=Getcell(x, y);
+		}
+	}
+
+	printstrcol(9, 13, "**********************", YELLOW, BLACK);
+	printstrcol(9, 14, "*                    *", YELLOW, BLACK);
+	printstrcol(9, 15, "* loading next track *", YELLOW, BLACK);
+	printstrcol(9, 16, "*                    *", YELLOW, BLACK);
+	printstrcol(9, 17, "**********************", YELLOW, BLACK);
+
 	if (++currtrack > MAXTRACKS) currtrack=0;
 	load_zsm(tracknames[currtrack], 2);
 	zsm_setmem(0, 0xA000, 2);
 	zsm_play(0);
+	cnt=0;
+	for (y=13; y<=17; ++y) {
+		for (x=9; x<=30; ++x) {
+			Putcell(x, y, cell[cnt++]);
+		}
+	}
+
 }
 
 /******************************************************************************
  Main function that initializes game and runs the main loop
 ******************************************************************************/
 int main(){
-	struct zsm_state mystate;
 	u8 btnPressed;
 	u8 btnHeld=0;
 	u8 btnPrev=0;
@@ -650,9 +672,6 @@ int main(){
 		btnPressed=0;
 		while (btnPressed != SNES_SEL) {
 			waitVsync();
-
-			mystate = zsm_getstate(0);
-			if (mystate.loopcnt!=0) dbg16(mystate.loopcnt);
 
 			btnHeld = ReadJoypad(0);
 			btnPressed = btnHeld & (btnHeld ^ btnPrev);

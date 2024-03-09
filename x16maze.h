@@ -47,6 +47,8 @@ extern char __fastcall__ ReadJoypad(char num);
 extern void __fastcall__ waitVsync();
 extern void __fastcall__ start_timer();
 extern void __fastcall__ PrintChar(char x, char y, char ch);
+extern unsigned int __fastcall__ Getcell(unsigned char x, unsigned char y);
+extern void __fastcall__ Putcell(unsigned char x, unsigned char y, unsigned int cell);
 extern char __fastcall__ Getcol(char x, char y);
 extern char __fastcall__ Getfgcol(char x, char y);
 extern char __fastcall__ Getbgcol(char x, char y);

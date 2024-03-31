@@ -653,7 +653,7 @@ int main(){
 
 	printstrcol(9, 13, "**********************", YELLOW, BLACK);
 	printstrcol(9, 14, "*                    *", YELLOW, BLACK);
-	printstrcol(9, 15, "* loading assetss... *", YELLOW, BLACK);
+	printstrcol(9, 15, "* loading assets...  *", YELLOW, BLACK);
 	printstrcol(9, 16, "*                    *", YELLOW, BLACK);
 	printstrcol(9, 17, "**********************", YELLOW, BLACK);
 
@@ -706,6 +706,8 @@ int main(){
 				++curlvl;
 				while (isleveldone(curlvl)!=0) ++curlvl;
 				btnPressed=SNES_SEL;
+				btnHeld=SNES_B;
+				btnPrev=SNES_B;
 			}
 		}
 	}

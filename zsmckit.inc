@@ -111,6 +111,7 @@ _zsm_setatten:
 	tax			; priority - in .X
 	pla			; attenuation - in .A
 	jmp	zsm_setatten
+	
 ;zsm_setcb(uint8_t priority, zsm_callback, uint8_t bank);
 _zsm_setcb:
 	sta	RAM_BANK	; Set RAM Bank
@@ -156,6 +157,7 @@ _zsm_setcb:
 	lda	#<@cb3		; Set own callback function that will call
 	ldy	#>@cb3		; users callback function
 	jmp	zsm_setcb
+
 ; ****** Callback functions that will call users callback function *******
 ; ****** This is done to get the return values in the correct order ******
 ; ****** for the C function                                        *******
@@ -191,6 +193,7 @@ _zsm_setcb:
 	jsr	pusha
 	pla
 @cb3j:	jmp	$FFFF
+
 ;zsm_clearcb(uint8_t priority);
 _zsm_clearcb:
 	tax			; Priority is in .A, move it to .X

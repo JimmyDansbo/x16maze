@@ -131,7 +131,7 @@ static void loadnshowcrisps() {
 	sa.palletteoffset 	= 1;
 	configSprite(0, &sa);
 
-	*(u8*)VERA_CONFIG	= (*(char*)VERA_CONFIG|0x40); // Enable sprites
+	*(u8*)VERA_DC_VIDEO	= (*(char*)VERA_DC_VIDEO|0x40); // Enable sprites
 }
 
 /******************************************************************************
@@ -661,7 +661,7 @@ int main(){
 	zsm_setmem(0, 0xA000, 2);
 	zsm_play(0);
 
-	*(u8*)VERA_CONFIG = (*(u8*)VERA_CONFIG&0xBF); // Disable sprites
+	*(u8*)VERA_DC_VIDEO = (*(u8*)VERA_DC_VIDEO&0xBF); // Disable sprites
 
 	while (1) {
 		// Find curlvl

@@ -33,7 +33,7 @@
 .export _zsmkit_setisr
 .export _zsmkit_clearisr
 
-RAM_BANK = $00
+RAM_BANK_SELECT = $00
 
 .segment "CODE"
 
@@ -77,7 +77,7 @@ _zsm_setfile:
 	jmp	zsm_setfile
 ;uint16_t zsm_loadpcm(uint8_t priority, uint16_t addr, uint8_t bank);
 _zsm_loadpcm:
-	sta	RAM_BANK	; set RAM bank
+	sta	RAM_BANK_SELECT	; set RAM bank
 	jsr	popa
 	pha			; low address
 	jsr	popa
@@ -94,7 +94,7 @@ _zsm_loadpcm:
 	rts
 ;zsm_setmem(uint8_t priority, uint16_t addr, uint8_t bank);
 _zsm_setmem:
-	sta	RAM_BANK	; Set RAM Bank
+	sta	RAM_BANK_SELECT	; Set RAM Bank
 	jsr	popa		; low address
 	pha
 	jsr	popa		; high address
@@ -114,7 +114,7 @@ _zsm_setatten:
 	
 ;zsm_setcb(uint8_t priority, zsm_callback, uint8_t bank);
 _zsm_setcb:
-	sta	RAM_BANK	; Set RAM Bank
+	sta	RAM_BANK_SELECT	; Set RAM Bank
 	jsr	popax		; Address of callback function
 	pha			; low addr
 	jsr	popa		; Priority
@@ -277,7 +277,7 @@ _zsm_set_int_rate:
 	jmp	zsm_set_int_rate
 ;zcm_setmem(uint8_t priority, uint16_t addr, uint8_t bank);
 _zcm_setmem:
-	sta	RAM_BANK	; Set RAM Bank
+	sta	RAM_BANK_SELECT	; Set RAM Bank
 	jsr	popa		; low address
 	pha
 	jsr	popa		; high address

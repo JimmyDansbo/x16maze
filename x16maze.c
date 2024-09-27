@@ -347,7 +347,7 @@ static void drawlevel() {
 		}
 		for (curx=offsetx; curx<offsetx+levels[lvlindex+1]; curx++) {
 			if ((ch & 0x80) == 0) {
-				Setbgcol(curx, cury, BLACK);
+				Setbgcol(curx, cury, bgcolor);
 				remflds++;
 			}
 			ch = ch<<1;
@@ -363,7 +363,7 @@ static void drawlevel() {
 	cursory = offsety+levels[lvlindex+4];
 
 	PrintChar(cursorx, cursory, 0x00); // Non-printable character
-	Setbgcol(cursorx, cursory, bgcolor);
+	Setcol(cursorx, cursory, (BLACK<<4)+bgcolor);
 
 	// remflds has been incremented once too many
 	--remflds;
@@ -397,20 +397,21 @@ static void do_move(s8 x, s8 y) {
 	while (Getbgcol(cursorx+x, cursory+y)!=WALLCOL) {
 		// Remove old cursor 
 		PrintChar(cursorx, cursory, ' ');
+		Setbgcol(cursorx, cursory, BLACK);
 		// Calculate new coordinate
 		cursorx+=x;
 		cursory+=y;
 		moved=true;
 		// Only update remaining fields if we overwrite
 		// an empty field
-		if (Getbgcol(cursorx, cursory)==BLACK) {
+		if (Getbgcol(cursorx, cursory)==bgcolor) {
 			remflds--;
 			sprintf(str, "%03d", remflds);
 			printstr(7, 1, str);
 		}
 		// Show cursor at new location
 		PrintChar(cursorx, cursory, 0x00);  //non-printable
-		Setbgcol(cursorx, cursory, bgcolor);
+		Setcol(cursorx, cursory, (BLACK<<4)+bgcolor);
 		waitVsync();
 	}
 	// Update MoveCnt if we have actually moved
